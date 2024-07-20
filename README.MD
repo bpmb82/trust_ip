@@ -1,6 +1,6 @@
 # tRust_ip
 
-This application can be used as middleware for reverse proxies like Traefik. This application checks the X-FORWARDED-FOR header against a static list of IP's and optionally, the Atlassian ip range (https://ip-ranges.atlassian.com).
+This application can be used as middleware for reverse proxies like Traefik. This application checks the X-FORWARDED-FOR header against a static list of IP's and optionally, the Atlassian ip range (https://ip-ranges.atlassian.com). I use this in front of Atlantis in combination with Bitbucket.
 
 ## Environment variables
 
