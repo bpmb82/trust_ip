@@ -1,0 +1,47 @@
+version: "3.8"
+
+services:
+
+  trust_ip:
+    image: bpmbee/trust_ip:2.0.0
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    ports:
+      - 8080:8080/tcp
+    environment:
+      - WHITELIST=127.0.0.1,192.168.1.79
+      - ATLASSIAN_IP_URL=https://ip-ranges.atlassian.com
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "4"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.middlewares.trust_ip.forwardauth.address=http://trust_ip:8080"
+      - "traefik.http.services.trust_ip.loadbalancer.server.port=8080"
+      - "traefik.http.middlewares.trust_ip.forwardauth.authResponseHeaders=X-Forwarded-For"
+    restart: unless-stopped
+
+  whoami:
+      image: traefik/whoami:latest
+      environment:
+        - TZ=Europe/Amsterdam
+      logging:
+        driver: "json-file"
+        options:
+          max-size: "200k"
+          max-file: "4"
+      labels:
+        - APP=Atlantis
+        - traefik.enable=true
+        - traefik.http.routers.atlantis.rule=Host(`whoami.example.com`)
+        - traefik.http.routers.atlantis.entrypoints=websecure
+        - traefik.http.routers.atlantis.tls=true
+        - traefik.http.routers.atlantis.service=whoami
+        - traefik.http.services.atlantis.loadbalancer.server.port=80
+        - traefik.http.services.atlantis.loadbalancer.sticky.cookie=true
+        - traefik.http.services.atlantis.loadbalancer.sticky.cookie.secure=true
+        - traefik.http.routers.atlantis.middlewares=trust_ip
+      restart: unless-stopped
