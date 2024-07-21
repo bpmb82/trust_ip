@@ -34,10 +34,3 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: docker.io/${{ vars.DOCKERHUB_USERNAME}}/trust_ip:${{steps.tag.outputs.tag}}, docker.io/${{ vars.DOCKERHUB_USERNAME}}/trust_ip:latest
-
-      - name: Docker Hub Description
-        uses: peter-evans/dockerhub-description@v4
-        with:
-          username: ${{ vars.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-          repository: ${{ vars.DOCKERHUB_USERNAME }}/trust_ip
