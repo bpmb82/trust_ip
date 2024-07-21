@@ -10,10 +10,12 @@ COPY src/main.rs ./src
 COPY Cargo.toml .
 
 RUN source $HOME/.cargo/env && \
-    cargo build --release --target x86_64-unknown-linux-musl
+    arch=$(arch) && \
+    cargo build --release --target $arch-unknown-linux-musl && \
+    mv /build/target/$arch-unknown-linux-musl/release/trust_ip /build/target
 
 FROM scratch
 
-COPY --from=builder /build/target/x86_64-unknown-linux-musl/release/trust_ip .
+COPY --from=builder /build/target/trust_ip .
 
 CMD ["/trust_ip"]
