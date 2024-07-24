@@ -1,9 +1,7 @@
-version: "3.8"
-
 services:
 
   trust_ip:
-    image: bpmbee/trust_ip:2.0.0
+    image: bpmbee/trust_ip:2.0.1
     build:
       context: ./
       dockerfile: ./Dockerfile
