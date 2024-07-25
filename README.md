@@ -4,7 +4,7 @@ This application can be used as middleware for reverse proxies like Traefik. Thi
 
 ## Environment variables
 
-One or both of the below environment variables should be present, otherwise, every request will be denied.
+One or both of the below environment variables should be present.
 
 ### WHITELIST
 Takes a comma separated string (no spaces) as a list of IP's to allow access to
