@@ -38,7 +38,7 @@ jobs:
       - name: Checkout trust_ip helm repo
         uses: actions/checkout@v4
         with:
-          repository: "https://github.com/bpmb82/trust_ip_helm_charts.git"
+          repository: "bpmb82/trust_ip_helm_charts"
           ref: master
           token: ${{ secrets.TRUST_IP_HELM_REPO }}
           path: trust_ip_helm_charts
@@ -46,6 +46,9 @@ jobs:
       - name: Update version in Helm chart
         run: |
           cd trust_ip_helm_charts
+          old_chart_version=$(awk '/^version/{print $2}' charts/trust-ip/Chart.yaml)
+          new_chart_version=$(echo $old_chart_version | awk -F. -v OFS=. 'NF==1{print ++$NF}; NF>1{if(length($NF+1)>length($NF))$(NF-1)++; $NF=sprintf("%0*d", length($NF), ($NF+1)%(10^length($NF))); print}')
+          sed -i "s/^version:.*$/version: $new_chart_version/" charts/trust-ip/Chart.yaml
           sed -i 's/^.*appVersion.*$/appVersion: "${{steps.tag.outputs.tag}}"/' charts/trust-ip/Chart.yaml
           git config user.name "$ {{ github.actor }}"
           git config user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
