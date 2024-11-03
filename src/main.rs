@@ -9,7 +9,7 @@ use serde::Deserialize;
 use std::env;
 use std::process::exit;
 use std::sync::Mutex;
-s
+
 #[derive(Deserialize, Debug)]
 struct Ips {
     items: Vec<Items>,

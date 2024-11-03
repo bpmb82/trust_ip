@@ -34,3 +34,21 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: docker.io/${{ vars.DOCKERHUB_USERNAME}}/trust_ip:${{steps.tag.outputs.tag}}, docker.io/${{ vars.DOCKERHUB_USERNAME}}/trust_ip:latest
+
+      - name: Checkout trust_ip helm repo
+        uses: actions/checkout@v4
+        with:
+          repository: "https://github.com/bpmb82/trust_ip_helm_charts.git"
+          ref: master
+          token: ${{ secrets.TRUST_IP_HELM_REPO }}
+          path: trust_ip_helm_charts
+
+      - name: Update version in Helm chart
+        run: |
+          cd trust_ip_helm_charts
+          sed -i 's/^.*appVersion.*$/appVersion: "${{steps.tag.outputs.tag}}"/' charts/trust-ip/Chart.yaml
+          git config user.name "$ {{ github.actor }}"
+          git config user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
+          git add .
+          git commit -m "Update version to ${{steps.tag.outputs.tag}}"
+          git push
