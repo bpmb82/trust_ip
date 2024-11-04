@@ -15,4 +15,8 @@ Queries this URL and parses its JSON reply for CIDR blocks. Then it checks the X
 
 ## Examples
 
+### Docker
 See the docker-compose for an example.
+
+### Kubernetes
+See the Helm repo for this service: https://github.com/bpmb82/trust_ip_helm_charts
