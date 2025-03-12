@@ -68,7 +68,7 @@ fn get_whitelist_from_env() -> String {
 fn is_whitelisted_ip(ip: &str, whitelist: &str) -> bool {
     whitelist.split(",")
         .map(|v| if v.contains('/') { v.to_string() } else { format!("{}/32", v) })
-        .any(|v| {println!("{}", v); iface_in_subnet(ip, &v).unwrap_or(false)})
+        .any(|v| iface_in_subnet(ip, &v).unwrap_or(false))
 }
 
 async fn is_atlassian_ip(ip: &str, state: &web::Data<AppState>) -> bool {
