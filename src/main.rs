@@ -60,12 +60,15 @@ async fn fetch_atlassian_ips() -> Vec<String> {
     }
 }
 
-
-fn is_whitelisted_ip(ip: &str) -> bool {
+fn get_whitelist_from_env() -> String {
     env::var("WHITELIST")
         .unwrap_or("".into())
-        .split(',')
-        .any(|v| v == ip)
+}
+
+fn is_whitelisted_ip(ip: &str, whitelist: &str) -> bool {
+    whitelist.split(",")
+        .map(|v| if v.contains('/') { v.to_string() } else { format!("{}/32", v) })
+        .any(|v| {println!("{}", v); iface_in_subnet(ip, &v).unwrap_or(false)})
 }
 
 async fn is_atlassian_ip(ip: &str, state: &web::Data<AppState>) -> bool {
@@ -82,13 +85,12 @@ async fn health(data: web::Data<AppState>) -> impl Responder {
 #[get("/")]
 async fn auth(ip: ConnectionInfo, data: web::Data<AppState>) -> impl Responder {
     if let Some(host_ip) = ip.realip_remote_addr() {
-        if is_whitelisted_ip(host_ip) || is_atlassian_ip(host_ip, &data).await {
+        if is_whitelisted_ip(host_ip, &get_whitelist_from_env()) || is_atlassian_ip(host_ip, &data).await {
             return HttpResponse::Ok().body("Authorized");
         }
     }
     HttpResponse::Unauthorized().body("Unauthorized")
 }
-
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -130,3 +132,23 @@ async fn main() -> std::io::Result<()> {
     .await
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_is_whitelisted_ip() {
+        let whitelist = "192.168.1.1,192.168.1.2";
+        assert!(is_whitelisted_ip("192.168.1.1", whitelist));
+        assert!(is_whitelisted_ip("192.168.1.2", whitelist));
+    }
+    #[test]
+    fn test_is_whitelisted_ip_in_range() {
+        let whitelist = "192.168.1.1,192.168.2.0/24,10.0.0.1/32,185.123.10.25";
+        assert!(is_whitelisted_ip("192.168.1.1", whitelist));
+        assert!(!is_whitelisted_ip("192.168.1.2", whitelist));
+        assert!(is_whitelisted_ip("192.168.2.1", whitelist));
+        assert!(is_whitelisted_ip("10.0.0.1", whitelist));
+        assert!(is_whitelisted_ip("185.123.10.25", whitelist));
+    }
+}
